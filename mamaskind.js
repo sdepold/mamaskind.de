@@ -44,7 +44,7 @@ window.mamaskind.transformTeaserImage = function() {
     $('<div>')
       .hide()
       .appendTo($('body'))
-      .load(hit.unescapedUrl + " .item_content p a img[height=80]", function() {
+      .load(hit.unescapedUrl + " .item_content img", function() {
         var img  = $(this).find('img').attr('src')
           , $img = $('<img>').attr('src', img)
 
