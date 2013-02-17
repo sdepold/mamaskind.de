@@ -19,10 +19,10 @@ window.mamaskind.transformTeaserImage = function() {
     return $('.tags a').map(function() { return $(this).text() }).toArray().join(' OR ')
   }
 
-  var getGoogleResults = function(callback) {
+  var getGoogleResults = function(query, callback) {
     var results = []
 
-    new $.GoogleSearch().search(getGoogleQuery(), {
+    new $.GoogleSearch().search(query, {
       site: 'mamaskind.de'
     }, function(data) {
       for (var i = 0; i < data.length; i++) {
@@ -45,58 +45,75 @@ window.mamaskind.transformTeaserImage = function() {
       .hide()
       .appendTo($('body'))
       .load(hit.unescapedUrl + " .item_content p a img[height=80]", function() {
-        var img = $(this).find('img').attr('src')
+        var img  = $(this).find('img').attr('src')
+          , $img = $('<img>').attr('src', img)
 
-        if (!!img && ($('> div', $references).length <= 5)) {
-          if ($references.find('h2').length === 0) {
-            $references
-              .append(
-                $('<h2>')
-                  .addClass('p2')
-                  .text('Weitere tolle Posts:')
-                  .css({ 'margin-bottom': '10px' })
-              )
-          }
+        $('<div>')
+          .append(
+            $('<a href="' + hit.unescapedUrl + '">')
+              .addClass('teaser-image')
+              .append($img)
+              .append($('<div>').addClass('tape'))
+              .append($('<div>').addClass('tape'))
+          )
+          .append(
+            $('<a href="' + hit.unescapedUrl + '">')
+              .text(hit.title.replace(' - mamaskind.de', ''))
+              .css({
+                  'padding': '110px 10px 0px 10px',
+                  'display': 'block',
+                  'color': '#777',
+                  'font-size': '13px',
+                  'font-weight': 'normal',
+                  'word-break': 'break-all'
+              })
+          )
+          .appendTo($references)
+          .css({ float: 'left', width: '94px' })
 
-          var $img = $('<img>').attr('src', img)
-
-          $('<div>')
-            .append(
-              $('<a href="' + hit.unescapedUrl + '">')
-                .addClass('teaser-image')
-                .append($img)
-                .append($('<div>').addClass('tape'))
-                .append($('<div>').addClass('tape'))
-            )
-            .append(
-              $('<a href="' + hit.unescapedUrl + '">')
-                .text(hit.title.replace(' - mamaskind.de', ''))
-                .css({
-                    'padding': '110px 10px 0px 10px',
-                    'display': 'block',
-                    'color': '#777',
-                    'font-size': '13px',
-                    'font-weight': 'normal',
-                    'word-break': 'break-all'
-                })
-            )
-            .appendTo($references)
-            .css({ float: 'left', width: '100px' })
-
-          $references.find('.clearer').remove()
-          $references.append($('<div>').css({clear: 'both'}).addClass("clearer"))
-        }
+        $references.find('.clearer').remove()
+        $references.append($('<div>').css({clear: 'both'}).addClass("clearer"))
       })
+  }
+
+  var appendSimilarPosts = function($references, hits) {
+    hits.forEach(function(hit) {
+      appendSimilarPost($references, hit)
+    })
   }
 
   window.mamaskind.addSimilarPosts = function() {
     if (document.location.href.indexOf('http://mamaskind.de/post/') === 0) {
       var $references = $('<div>').appendTo($('.item_content'))
+        , hits        = []
 
-      getGoogleResults(function(hits) {
-        hits.forEach(function(hit) {
-          appendSimilarPost($references, hit)
-        })
+      $references
+        .append(
+          $('<h2>')
+            .addClass('p2')
+            .text('Weitere tolle Posts:')
+            .css({ 'margin-bottom': '10px' })
+        )
+
+      getGoogleResults(getGoogleQuery(), function(_hits) {
+        hits = hits.concat(_hits)
+
+        if (hits.length < 5) {
+          getGoogleResults($('.post_title').text().split(' ').join(' OR '), function(_hits) {
+            hits = hits.concat(_hits)
+
+            if (hits.length < 5) {
+              getGoogleResults("", function(_hits) {
+                hits = hits.concat(_hits)
+                appendSimilarPosts($references, hits.splice(0, 5))
+              })
+            } else {
+              appendSimilarPosts($references, hits.splice(0, 5))
+            }
+          })
+        } else {
+          appendSimilarPosts($references, hits.splice(0, 5))
+        }
       })
     }
   }
