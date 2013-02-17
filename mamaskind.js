@@ -58,7 +58,7 @@ window.mamaskind.transformTeaserImage = function() {
           )
           .append(
             $('<a href="' + hit.unescapedUrl + '">')
-              .text(hit.title.replace(' - mamaskind.de', ''))
+              .html(hit.title.replace(' - mamaskind.de', ''))
               .css({
                   'padding': '110px 10px 0px 10px',
                   'display': 'block',
