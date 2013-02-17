@@ -78,7 +78,6 @@ window.mamaskind.transformTeaserImage = function() {
 
   var appendSimilarPosts = function($references, hits) {
     $(hits).each(function() {
-      console.log(this)
       appendSimilarPost($references, this)
     })
   }
